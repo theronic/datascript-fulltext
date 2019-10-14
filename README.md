@@ -35,15 +35,16 @@ Compatible with Posh for Reagent.
 
 # Todo
 
-  0. Delete index values on mutation. Should be quick to add, and then do a smart diff to avoid writes.
+  1. [x] ~~Delete index values on mutation. Should be quick to add, and then do a smart diff to avoid writes.~~
+  1. Store hashed token values instead of strings.
   1. Use schema definition of source connection.
-  2. Dynamically update fulltext schema if source schema changes.
-  3. Rebuild index in batches using queued web workers to prevent locking main thread.
-  4. Add adapter for off-site storage, e.g. Redis.
-  5. Match source transaction IDs if possible.
-  6. Fork & extend Datascript to support fulltext search function.
-  7. Add soundex or double-metaphone
-  8. Maintain token counts for relevance ranking.
-  9. Support n-grams (can get heavy).
-  10. Index hashed token values directly instead of strings.
-  11. Bloom filters.
+  1. Track source schema and rebuild index on change.
+  1. Batch updates using queued web workers to prevent locking main thread.
+  1. Add adapter for off-site storage, e.g. Redis.
+  1. Match source transaction IDs if possible.
+  1. Fork & extend Datascript to support `(fulltext ...)` search function.
+  1. [in progress] Add soundex or double-metaphone
+  1. Maintain indexed token counts for relevance ranking. Maybe :db/index does this already?
+  1. Support n-grams (can get heavy).
+  1. Bloom filters.
+  1. seq over matching datoms directly with pagination.
