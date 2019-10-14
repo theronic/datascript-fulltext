@@ -1,4 +1,4 @@
-# Fulltext Indexing Adapter for DataScript
+# Fulltext Indexing Adapter for DataScript in ClojureScript
 
 I'm working on a text-heavy application that uses DataScript and I needed to do fulltext searches on locally cached data.
 
