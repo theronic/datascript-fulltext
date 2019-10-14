@@ -1,6 +1,4 @@
-(ns bridge.data.fulltext
-  (:require-macros
-    [bridge.utils :refer [profile]])
+(ns com.theronic.datascript.fulltext
   (:require
     [datascript.core :as d]
     [posh.reagent :as p]
@@ -34,9 +32,22 @@
 
 (defn parse-fulltext-value [value]
   (->> value
-      (tokenize)
-      (remove stop-words)
-      (set)))
+       (tokenize)
+       (remove stop-words)
+       (set)))
+
+(defn query!
+  "Takes search string as input and returns a vector of entity IDs.
+  Consider adding FT conn as input?
+  Make query extensible?"
+  [input]
+  (->> (parse-fulltext-value input)
+       (d/q
+         '[:find [?e ...]
+           :in $ [?token ...]
+           :where
+           [?e ?a ?token]]
+         conn)))
 
 (defn parse-datom
   ":a? add?"
