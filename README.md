@@ -29,7 +29,7 @@ Compatible with Posh for Reagent.
           [:div [:code "Matching full-text entities: " (ft/query! @!input)]]))
     
     (defn init! []
-      (fulltext/install-fulltext! conn) ;; here we attach to the 
+      (ft/install-fulltext! conn) ;; here we attach to the 
       (d/transact! conn [{:db/id -1 :message/text "hi there"}]) ;; load from storage after connecting to sync.
       (reagent/render [parent-component conn]))
       
