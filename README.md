@@ -1,34 +1,44 @@
-# Fulltext Indexing Adapter for DataScript in ClojureScript
+# Fulltext Index Search Adapter for DataScript in ClojureScript
 
-I'm working on a text-heavy application that uses DataScript and I needed to do fulltext searches on locally cached data.
+I needed fulltext search in a text-heavy application that uses DataScript.
 
 ## Is it any good?
 
-Not yet, it's a work-in-progress. Currently requires manual fiddling with schema to get to work, but this can be automated.
+Yes, but it's still early.
 
 ## Design
 
-The fulltext adapter uses `(d/listen! conn)` to inspect incoming tx-report, filters on attributes that have `:db/fulltext true`, tokenises the string value, removes stop words (like "the" and "and"), and maintains a multiple cardinality DataScript DB for these attributes.
+The search adapter maintains a fulltext index in a separate DataScript database. This is not ideal, but the current design of Datomic & DataScript do not support extensible indices.
 
-I chose to use a separate DataScript DB because it makes it easier to have a one-to-one attribute mapping, and to manage localStorage cache eviction since it could grow large. This is convenient because you can query across DataScript databases if you want to, e.g. `(d/q '[:in $ $1 ...] db1 db2)`.
+The fulltext adapter:
+ 1. listens for changes in the source connection using `(d/listen! conn)`,
+ 2. inspects the incoming tx-report,
+ 3. filters on attributes that have `:db/fulltext true` in their schema,
+ 4. tokenises the string value,
+ 5. removes stop words like "the" and "and",
+ 6. maintains a multi-cardinality attribute in the fulltext DataScript DB. 
 
-Compatible with Posh for Reagent.
+Using a separate connection makes it convenient to have a one-to-one attribute mapping and to manage cache eviction since it could grow large. In practice this is not an issue because you can query across DataScript databases, e.g. `(d/q '[:in $ $1 ...] db1 db2)`.
 
 ## Usage
 
-    (require '[reagent.core :as r :refer [atom]])
-    (require '[datascript.core :as d])
-    (require '[com.theronic.datascript.fulltext :as ft])
+    (ns datascript-fulltext.example
+        :require [[reagent.core :as r :refer [atom]]
+                  [datascript.core :as d]
+                  [com.theronic.datascript.fulltext :as ft]])
     
     (def conn (d/create-conn {:message/text {:db/fulltext true}})
+    (def !ft-conn (atom nil))
     
     (defn parent-component [conn]
         (let [!input (atom "hi")] ;; todo text input
           [:div [:code "Matching fulltext entities: " (ft/query! @!input)]]))
     
     (defn init! []
-      (ft/install-fulltext! conn) ;; here we attach to the 
-      (d/transact! conn [{:db/id -1 :message/text "hi there"}]) ;; load from storage after connecting to sync.
+      (let [fulltext-conn (ft/install-fulltext! conn)] 
+        (d/transact! conn [{:db/id -1 :message/text "hi there"}]) ;; load from storage after connecting to sync.
+        (ft/search @ft/ft-conn "hi") ;; => fill yield message ID.
+        (reset! !ft-conn fulltext-conn))
       (reagent/render [parent-component conn]))
       
     (init!)
